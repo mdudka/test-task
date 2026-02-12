@@ -9,6 +9,8 @@ This test suite covers the Alynea application UI and AutomationExercise API:
 
 **Framework**: Playwright with TypeScript
 
+**Live Test Report**: [https://mdudka.github.io/test-task/](https://mdudka.github.io/test-task/)
+
 ## Test Cases
 
 ### UI Tests (7 total)
@@ -140,7 +142,7 @@ This test suite covers the Alynea application UI and AutomationExercise API:
 
 ### Prerequisites
 
-- **Node.js**: v20 or higher 
+- **Node.js**: v20 or higher
 - **npm**: Comes with Node.js
 - **Git**: For cloning the repository
 - **Docker** (optional): For containerized test execution
@@ -177,7 +179,7 @@ npm install
 npx playwright install
 ```
 
-This will download Chromium, Firefox, and WebKit browsers.
+This will download Chromium and WebKit browsers.
 
 ### Local Test Execution
 
@@ -233,11 +235,9 @@ npx playwright test --ui
 
 ```bash
 npm run test:chromium
-npm run test:firefox
 npm run test:webkit
 # or
 npx playwright test --project=chromium
-npx playwright test --project=firefox
 npx playwright test --project=webkit
 ```
 
@@ -348,7 +348,7 @@ npm run report
 **playwright.config.ts** settings:
 
 - Base URL: `https://staging-stack.alynea.io/`
-- Browsers: Chromium, Firefox, WebKit (UI tests only)
+- Browsers: Chromium, WebKit (UI tests only)
 - API tests: Separate project (single execution, browser-independent)
 - Retries: 2 attempts on CI
 - Screenshots: On failure
@@ -416,7 +416,7 @@ test-task/
 
 **Error Logging**: Automatic capture of console and network errors during test execution, saved to `test-results/error-logs/` in JSON format.
 
-**Cross-Browser Testing**: UI tests run on Chromium, Firefox, and WebKit. API tests execute once (browser-independent).
+**Cross-Browser Testing**: UI tests run on Chromium and WebKit. API tests execute once (browser-independent).
 
 **Dynamic Test Data**: Project names include timestamps to ensure uniqueness across test runs.
 
