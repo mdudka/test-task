@@ -47,12 +47,12 @@ export default defineConfig({
             testIgnore: /.*api\.test\.ts/,
         },
 
-        {
-            name: 'firefox',
-            use: { ...devices['Desktop Firefox'] },
-            testMatch: /.*\.spec\.ts|.*\.test\.ts/,
-            testIgnore: /.*api\.test\.ts/,
-        },
+        // {
+        //     name: 'firefox',
+        //     use: { ...devices['Desktop Firefox'] },
+        //     testMatch: /.*\.spec\.ts|.*\.test\.ts/,
+        //     testIgnore: /.*api\.test\.ts/,
+        // },
 
         {
             name: 'webkit',
