@@ -2,514 +2,433 @@
 
 ## Project Overview
 
-This test suite covers the core functionality of the Alynea application, focusing on authentication and project management workflows using the Page Object Model pattern with Playwright.
+This test suite covers the Alynea application UI and AutomationExercise API:
 
-## Test Framework
+- **UI Testing**: Authentication and project management using Page Object Model
+- **API Testing**: RESTful API validation with API Client pattern
 
-- **Framework**: Playwright with TypeScript
-- **Pattern**: Page Object Model (POM)
-- **Test Runner**: Playwright Test
-- **Language**: TypeScript
+**Framework**: Playwright with TypeScript
 
 ## Test Cases
 
-### Authentication Tests (`sign-in.test.ts`)
+### UI Tests (7 total)
 
-#### 1. Should sign in with valid credentials
+#### Authentication Tests (`tests/sign-in.test.ts`)
 
-**Description**: Verifies that a user can successfully log in with valid email and password.
+**1. Should sign in with valid credentials**
 
-**Steps**:
+- **Purpose**: Verify successful login with correct credentials
+- **Test Data**: Email: `bacos38210@aixind.com`, Password: `123123`
+- **Steps**:
+    1. Navigate to landing page
+    2. Click "Log In" button
+    3. Accept cookies if prompted
+    4. Enter valid credentials
+    5. Submit login form
+- **Expected**: User redirected to home page, authentication successful
 
-1. Open landing page
-2. Click "Log In" button
-3. Enter valid email: `bacos38210@aixind.com`
-4. Enter valid password: `123123`
-5. Click "Log in" button
+**2. Should not sign in with invalid email**
 
-**Expected Result**: User is redirected to the home page and successfully authenticated.
+- **Purpose**: Validate error handling for incorrect email
+- **Test Data**: Email: `invalid.email@invalid.domain`, Password: `123123`
+- **Expected**: Error message "Invalid Email or password." displayed
 
----
+**3. Should not sign in with invalid password**
 
-#### 2. Should not sign in with invalid email
+- **Purpose**: Validate error handling for incorrect password
+- **Test Data**: Email: `bacos38210@aixind.com`, Password: `wrong-password`
+- **Expected**: Error message "Invalid Email or password." displayed
 
-**Description**: Validates that the system rejects login attempts with an invalid email address.
+**4. Should show validation error for invalid email format**
 
-**Steps**:
+- **Purpose**: Test client-side email validation
+- **Test Data**: Invalid formats: `invalid-email`, `invalid-email@`, `invalid-email@domain`
+- **Expected**: Validation error "Please enter a valid email address"
 
-1. Open landing page
-2. Click "Log In" button
-3. Enter invalid email: `invalid.email@invalid.domain`
-4. Enter valid password: `123123`
-5. Click "Log in" button
+#### Project Creation Tests (`tests/create-custom-project.test.ts`)
 
-**Expected Result**: Error message "Invalid Email or password." is displayed.
+**5. Should create a new custom project successfully**
 
----
+- **Purpose**: Verify complete project creation workflow
+- **Test Data**:
+    - Jurisdiction ID: `1`
+    - Project Name: `Custom Project [timestamp]`
+    - Address: `Kyiv Street, Springfield,`
+    - Unit Number: `5`
+- **Steps**:
+    1. Login with valid credentials
+    2. Navigate to Projects page
+    3. Click "Create Custom Project"
+    4. Fill all required and optional fields
+    5. Submit project creation
+    6. Verify project details
+    7. Verify project appears in list
+- **Expected**: Project created with "Draft" status, all details match
 
-#### 3. Should not sign in with invalid password
+**6. Should validate required fields for project creation**
 
-**Description**: Validates that the system rejects login attempts with an incorrect password.
+- **Purpose**: Ensure form validation works correctly
+- **Steps**:
+    1. Login and navigate to project creation
+    2. Verify "Create Project" button is disabled
+    3. Fill required fields one by one
+    4. Verify button enables only when all required fields filled
+- **Expected**: Button state changes based on form completion
 
-**Steps**:
+**7. Should create project without optional unit number**
 
-1. Open landing page
-2. Click "Log In" button
-3. Enter valid email: `bacos38210@aixind.com`
-4. Enter invalid password: `wrong-password`
-5. Click "Log in" button
+- **Purpose**: Verify optional fields don't block project creation
+- **Test Data**: Same as test #5 but without unit number
+- **Expected**: Project created successfully without unit number
 
-**Expected Result**: Error message "Invalid Email or password." is displayed.
+### API Tests (5 total)
 
----
+#### Products API Tests (`tests/api.test.ts`)
 
-#### 4. Should show validation error for invalid email format
+**8. Positive: Should successfully retrieve all products list**
 
-**Description**: Tests client-side email format validation before form submission.
+- **Endpoint**: `GET /api/productsList`
+- **Purpose**: Validate product list retrieval
+- **Expected Response**:
+    - Status: 200
+    - Response code: 200
+    - Products array with items
+    - Each product has: id, name, price, brand, category
 
-**Steps**:
+**9. Negative: Should return error when searching without required parameter**
 
-1. Open landing page
-2. Click "Log In" button
-3. Enter invalid email formats:
-    - `invalid-email`
-    - `invalid-email@`
-    - `invalid-email@domain`
-4. Click on password field to trigger validation
+- **Endpoint**: `POST /api/searchProduct` (without body)
+- **Purpose**: Validate parameter validation
+- **Expected Response**:
+    - Status: 200
+    - Response code: 400
+    - Message contains "Bad request"
 
-**Expected Result**: Validation error "Please enter a valid email address" is displayed for each invalid format.
+#### Brands API Tests
 
----
+**10. Positive: Should successfully retrieve all brands list**
 
-### Project Creation Tests (`create-custom-project.test.ts`)
+- **Endpoint**: `GET /api/brandsList`
+- **Purpose**: Validate brands list retrieval
+- **Expected Response**:
+    - Status: 200
+    - Response code: 200
+    - Brands array with id and brand name
 
-#### 1. Should create a new custom project successfully
+#### Authentication API Tests
 
-**Description**: Verifies the complete workflow of creating a custom project with all required and optional fields.
+**11. Negative: Should return error for login with invalid credentials**
 
-**Preconditions**: User is authenticated with valid credentials.
+- **Endpoint**: `POST /api/verifyLogin`
+- **Test Data**: Email: `invalid@email.com`, Password: `wrongpassword`
+- **Purpose**: Validate authentication error handling
+- **Expected Response**:
+    - Status: 200
+    - Response code: 404
+    - Message: "User not found!"
 
-**Steps**:
+**12. Negative: Should return error for login without email parameter**
 
-1. Navigate to Projects page
-2. Click "Create Custom Project" button
-3. Select jurisdiction with ID `1`
-4. Enter unique project name (generated with timestamp)
-5. Search for address: `Kyiv`
-6. Select address: `Kyiv Street, Springfield,`
-7. Enter unit number: `5`
-8. Click "Create Project" button
-9. Verify project details page displays correct information
-10. Navigate back to Projects list
-11. Verify new project appears in the list
-
-**Expected Result**:
-
-- Success message is displayed
-- Project details match entered information
-- Project appears in the projects list with "Draft" status
-
----
-
-#### 2. Should validate required fields for project creation
-
-**Description**: Tests that the Create Project button remains disabled until all required fields are filled.
-
-**Preconditions**: User is authenticated with valid credentials.
-
-**Steps**:
-
-1. Navigate to Projects page
-2. Click "Create Custom Project" button
-3. Verify "Create Project" button is disabled
-4. Enter project name: `Test Project`
-5. Verify "Create Project" button is still disabled
-6. Select jurisdiction with ID `1`
-7. Search and select address: `Kyiv Street, Springfield,`
-8. Verify "Create Project" button is now enabled
-
-**Expected Result**:
-
-- Create button is disabled when required fields are empty
-- Create button becomes enabled only when all required fields are filled
-
----
-
-#### 3. Should create project without optional unit number
-
-**Description**: Verifies that projects can be created successfully without filling optional fields.
-
-**Preconditions**: User is authenticated with valid credentials.
-
-**Steps**:
-
-1. Navigate to Projects page
-2. Click "Create Custom Project" button
-3. Select jurisdiction with ID `1`
-4. Enter unique project name (generated with timestamp)
-5. Search for address: `Kyiv`
-6. Select address: `Kyiv Street, Springfield,`
-7. Skip unit number field (optional)
-8. Click "Create Project" button
-
-**Expected Result**: Project is created successfully and success message is displayed.
-
----
-
-## Test Summary
-
-### Coverage
-
-- **Total Test Cases**: 7
-- **Authentication Tests**: 4
-- **Project Management Tests**: 3
-
-### Test Results
-
-| Test Suite             | Total | Status    |
-| ---------------------- | ----- | --------- |
-| Sign-in Tests          | 4     | ✓ Passing |
-| Project Creation Tests | 3     | ✓ Passing |
-
-### Architecture
-
-- **Pattern**: Page Object Model
-- **Structure**:
-    - `app/pages/` - Page objects for different pages
-    - `app/pages/projects/` - Project-related page objects
-    - `app/components/` - Reusable UI components
-    - `fixtures/` - Test fixtures and setup
-    - `tests/` - Test specifications
-
-### Key Features
-
-- Viewport-adaptive design ready (mobile/desktop)
-- Reusable authentication flows
-- Centralized element selectors
-- Type-safe test data interfaces
-- Cookie acceptance handling
-- Dynamic test data generation with unique identifiers
-
-### Running Tests
-
-```bash
-# Run all tests
-npx playwright test
-
-# Run specific test file
-npx playwright test tests/sign-in.test.ts
-
-# Run tests in headed mode
-npx playwright test --headed
-
-# Run tests with UI mode
-npx playwright test --ui
-
-# Generate test report
-npx playwright show-report
-```
+- **Endpoint**: `POST /api/verifyLogin` (password only)
+- **Purpose**: Validate required parameter enforcement
+- **Expected Response**:
+    - Status: 200
+    - Response code: 400
+    - Message contains "Bad request"
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js (v16 or higher)
-- npm or yarn package manager
+- **Node.js**: v20 or higher 
+- **npm**: Comes with Node.js
+- **Git**: For cloning the repository
+- **Docker** (optional): For containerized test execution
 
 ### Installation
 
-1. **Clone the repository**
+**1. Fork and Clone the Repository**
+
+Fork the repository on GitHub, then clone your fork:
 
 ```bash
-git clone <repository-url>
-cd uitop-test-task
+# Fork the repository at: https://github.com/mdudka/test-task
+# Then clone your fork:
+git clone https://github.com/YOUR_USERNAME/test-task.git
+cd test-task
 ```
 
-2. **Install dependencies**
+Or clone the original repository directly:
+
+```bash
+git clone https://github.com/mdudka/test-task.git
+cd test-task
+```
+
+**2. Install Dependencies**
 
 ```bash
 npm install
 ```
 
-3. **Install Playwright browsers**
+**3. Install Playwright Browsers**
 
 ```bash
 npx playwright install
 ```
 
-### Running Tests Locally
+This will download Chromium, Firefox, and WebKit browsers.
 
-1. **Run all tests in headless mode**
+### Local Test Execution
+
+**Run All Tests**
 
 ```bash
+npm test
+# or
 npx playwright test
 ```
 
-2. **Run tests in headed mode (see browser)**
+**Run UI Tests Only**
 
 ```bash
+npm run test:ui
+# or
+npx playwright test tests/sign-in.test.ts tests/create-custom-project.test.ts
+```
+
+**Run API Tests Only**
+
+```bash
+npm run test:api
+# or
+npx playwright test tests/api.test.ts
+```
+
+**Run Tests in Headed Mode (Watch Browser)**
+
+```bash
+npm run test:headed
+# or
 npx playwright test --headed
 ```
 
-3. **Run specific test file**
+**Run Tests in Debug Mode**
 
 ```bash
-npx playwright test tests/sign-in.test.ts
-npx playwright test tests/create-custom-project.test.ts
-```
-
-4. **Run tests in UI mode (interactive)**
-
-```bash
-npx playwright test --ui
-```
-
-5. **Run tests in debug mode**
-
-```bash
+npm run test:debug
+# or
 npx playwright test --debug
 ```
 
-6. **Run tests on specific browser**
+**Run Tests with UI Mode (Interactive)**
 
 ```bash
+npm run test:ui-mode
+# or
+npx playwright test --ui
+```
+
+**Run Tests on Specific Browser**
+
+```bash
+npm run test:chromium
+npm run test:firefox
+npm run test:webkit
+# or
 npx playwright test --project=chromium
 npx playwright test --project=firefox
 npx playwright test --project=webkit
 ```
 
-7. **View test report**
+**Run Specific Test File**
 
 ```bash
+npx playwright test tests/sign-in.test.ts
+npx playwright test tests/create-custom-project.test.ts
+npx playwright test tests/api.test.ts
+```
+
+**Run Specific Test by Name**
+
+```bash
+npx playwright test -g "should sign in with valid credentials"
+npx playwright test -g "should create a new custom project"
+```
+
+### View Test Results
+
+**HTML Report (Recommended)**
+
+```bash
+npm run report
+# or
 npx playwright show-report
 ```
 
-### Configuration
+Opens an interactive HTML report in your browser with:
 
-Test configuration is defined in `playwright.config.ts`. Key settings include:
+- Test execution timeline
+- Screenshots and videos of failures
+- Detailed error messages and traces
+- Network logs
+
+**Console Output**
+
+Test results are automatically displayed in the terminal after execution.
+
+**Test Artifacts**
+
+After test execution, check:
+
+- `playwright-report/` - HTML report
+- `test-results/` - Screenshots, videos, traces
+- `test-results/error-logs/` - Console and network error logs (JSON format)
+
+### Troubleshooting
+
+**Tests fail with "Browser not found"**
+
+```bash
+npx playwright install
+```
+
+**Port conflicts or connection errors**
+
+- Ensure no other services are blocking required ports
+- Check your internet connection for external API tests
+
+**Tests timeout**
+
+- Increase timeout in `playwright.config.ts`
+- Check if the application is accessible: https://staging-stack.alynea.io
+
+**Need clean test run**
+
+```bash
+# Remove previous test results
+rm -rf test-results playwright-report
+
+# Run tests again
+npm test
+```
+
+## Docker Support
+
+**Build and Run with Docker:**
+
+```bash
+# Using npm scripts (recommended)
+npm run docker:build      # Build image
+npm run docker:run        # Run tests
+
+# Using Docker Compose
+docker-compose up --build
+
+# Using Docker CLI
+docker build -t playwright-tests .
+docker run --rm playwright-tests
+```
+
+**Docker Test Results:**
+
+After running in Docker, results are available in:
+
+- `./test-results/` - Screenshots, videos, error logs
+- `./playwright-report/` - HTML report
+
+View report after Docker run:
+
+```bash
+npm run report
+```
+
+## Configuration
+
+**playwright.config.ts** settings:
 
 - Base URL: `https://staging-stack.alynea.io/`
-- Timeout: 30 seconds
+- Browsers: Chromium, Firefox, WebKit (UI tests only)
+- API tests: Separate project (single execution, browser-independent)
 - Retries: 2 attempts on CI
-- Browsers: Chromium, Firefox, Webkit
+- Screenshots: On failure
+- Videos: On failure
+- Reporters: HTML, List, JSON
 
-### Project Structure
+## CI/CD Pipeline
+
+**GitHub Actions Workflows:**
+
+1. **Standard Workflow** (`.github/workflows/playwright.yml`)
+    - Triggers: Push to main, Pull Requests
+    - Runs all tests on Ubuntu
+    - Uploads test results as artifacts
+
+2. **Docker Workflow with GitHub Pages** (`.github/workflows/playwright-docker.yml`)
+    - Runs tests in Docker container
+    - Publishes HTML report to GitHub Pages
+    - Report URL: `https://<username>.github.io/<repository>/`
+
+**Enable GitHub Pages:**
+
+1. Go to repository Settings → Pages
+2. Source: Select "GitHub Actions"
+3. Save changes
+
+Reports will be published automatically on each workflow run.
+
+## Project Structure
 
 ```
-uitop-test-task/
+test-task/
 ├── app/
-│   ├── components/          # Reusable UI components
-│   │   ├── navigation.component.ts
-│   │   └── sign-in.component.ts
-│   ├── pages/              # Page objects
+│   ├── pages/              # Page Object Model
 │   │   ├── projects/       # Project-related pages
 │   │   │   ├── create-project.page.ts
 │   │   │   ├── project-details.page.ts
 │   │   │   └── projects.page.ts
 │   │   ├── home.page.ts
 │   │   └── landing.page.ts
-│   ├── abstractPage.ts     # Base page class
-│   └── index.ts           # Application entry point
-├── fixtures/              # Test fixtures
-│   └── index.ts
-├── tests/                 # Test specifications
+│   ├── components/         # Reusable UI components
+│   │   ├── navigation.component.ts
+│   │   └── sign-in.component.ts
+│   └── abstractPage.ts     # Base page class
+├── api/
+│   ├── api-client.ts       # API methods
+│   └── api-fixtures.ts     # API fixtures
+├── fixtures/
+│   └── index.ts            # Test fixtures
+├── tests/
 │   ├── sign-in.test.ts
-│   └── create-custom-project.test.ts
-├── playwright.config.ts   # Playwright configuration
-└── README.md             # This file
+│   ├── create-custom-project.test.ts
+│   └── api.test.ts
+├── utils/
+│   └── error-logger.ts     # Error capture utility
+├── .github/workflows/      # CI/CD pipelines
+├── Dockerfile
+├── docker-compose.yml
+└── playwright.config.ts
 ```
 
-### Test Maintenance
+## Notes
 
-- All page objects follow consistent naming conventions
-- Selectors are centralized in page objects for easy maintenance
-- Test data is typed using TypeScript interfaces
-- Mobile viewport support structure in place
+**Mobile Viewports**: Configuring and maintaining tests for mobile viewports requires additional time for viewport detection, conditional logic, and separate selectors. This was excluded from the task scope to meet time constraints.
 
----
+**Error Logging**: Automatic capture of console and network errors during test execution, saved to `test-results/error-logs/` in JSON format.
 
-## Future Improvements & Best Practices
+**Cross-Browser Testing**: UI tests run on Chromium, Firefox, and WebKit. API tests execute once (browser-independent).
 
-This section outlines potential enhancements that could be implemented in a production environment but were intentionally scoped out due to time constraints for this test task.
+**Dynamic Test Data**: Project names include timestamps to ensure uniqueness across test runs.
 
-### 1. Environment Configuration & Secrets Management
+## Future Improvements
 
-**Current State**: Credentials and URLs are hardcoded in test files and config.
+Potential production enhancements:
 
-**What Can Be Done**:
-- Implement environment variables using `.env` files with `dotenv` package
-- Store sensitive data (credentials, API keys) in environment variables
-- Create separate configs for different environments (dev, staging, production)
-- Use GitHub Secrets for CI/CD credentials
-- Add `.env.example` file for documentation
-
-**Example**:
-```typescript
-// .env file
-TEST_USER_EMAIL=bacos38210@aixind.com
-TEST_USER_PASSWORD=123123
-BASE_URL=https://staging-stack.alynea.io
-```
-
-### 2. Test Data Management
-
-**Current State**: Test data is scattered across test files and some values are hardcoded.
-
-**What Can Be Done**:
-- Create a centralized test data factory or fixtures
-- Implement data builders for complex objects (e.g., `ProjectDataBuilder`)
-- Add test data cleanup/teardown hooks to maintain test isolation
-- Consider using faker.js for generating realistic random data
-- Store common test data in JSON/YAML files
-
-**Example**:
-```typescript
-// test-data/users.ts
-export const TEST_USERS = {
-  validUser: { email: process.env.TEST_USER_EMAIL, password: process.env.TEST_USER_PASSWORD },
-  invalidUser: { email: 'invalid@test.com', password: 'wrong-pass' }
-};
-```
-
-### 3. Enhanced Error Handling & Logging
-
-**Current State**: Basic Playwright error messages and assertions.
-
-**What Can Be Done**:
-- Add custom error messages to all assertions for better debugging
-- Implement structured logging (e.g., winston, pino)
-- Add screenshots on failure with descriptive names
-- Create custom expect matchers for domain-specific assertions
-- Add retry logic for flaky elements
-- Implement better wait strategies with polling
-
-### 4. API Testing & Test Performance
-
-**Current State**: All tests go through UI which is slower and more fragile.
-
-**What Can Be Done**:
-- Use API calls for test setup (authentication, data creation)
-- Implement API helper utilities for common operations
-- Create reusable authentication state that can be loaded
-- Use Playwright's storage state to cache authentication
-- Add API test suite for backend validation
-
-**Example**:
-```typescript
-// Use auth state to skip login UI
-test.use({ storageState: 'auth.json' });
-```
-
-### 5. Test Organization & Scalability
-
-**Current State**: Tests are in a flat structure with basic organization.
-
-**What Can Be Done**:
-- Organize tests by feature/module directories
-- Implement test tags for selective test execution (@smoke, @regression)
-- Create separate test suites (smoke, regression, E2E)
-- Add visual regression testing with Percy or Playwright screenshots
-- Implement cross-browser testing strategy
-- Add accessibility testing (axe-core integration)
-
-### 6. Reporting & Monitoring
-
-**Current State**: Basic HTML report from Playwright.
-
-**What Can Be Done**:
-- Integrate with test management tools (TestRail, Xray)
-- Add custom reporters (Allure, Mochawesome)
-- Implement test metrics tracking (duration, flakiness, pass rate)
-- Add Slack/email notifications for CI failures
-- Create dashboards for test trends and coverage
-- Integrate with monitoring tools (Datadog, New Relic)
-
-### 7. Code Quality & Standards
-
-**Current State**: Basic TypeScript setup with Prettier.
-
-**What Can Be Done**:
-- Add ESLint with Playwright plugin and strict rules
-- Implement pre-commit hooks with Husky
-- Add commit message linting (commitlint)
-- Create coding standards documentation
-- Implement code coverage reporting
-- Add TypeScript strict mode
-- Set up SonarQube or similar for code quality metrics
-
-### 8. CI/CD Enhancements
-
-**Current State**: Basic GitHub Actions workflow.
-
-**What Can Be Done**:
-- Parallelize test execution across multiple machines
-- Implement test sharding for faster execution
-- Add matrix strategy for multiple environments/browsers
-- Create separate workflows for smoke vs full regression
-- Implement scheduled test runs (nightly builds)
-- Add deployment gates based on test results
-- Cache dependencies and Playwright browsers
-- Add test result trends in PR comments
-
-### 9. Page Object Enhancements
-
-**Current State**: Basic page objects with some reusability.
-
-**What Can Be Done**:
-- Implement proper wait strategies (avoid hard waits)
-- Add method chaining for fluent API style
-- Create base component classes for common UI patterns
-- Add data-testid attributes to application for stable selectors
-- Implement soft assertions for multiple validations
-- Add JSDoc comments for better IDE support
-- Create helper methods for common workflows
-
-### 10. Test Data Isolation & Cleanup
-
-**Current State**: Tests create data but don't clean up.
-
-**What Can Be Done**:
-- Implement database cleanup hooks
-- Use unique identifiers for all test entities
-- Add afterEach hooks to delete created test data
-- Consider using transactions that can be rolled back
-- Implement test user pools to avoid conflicts
-- Add database seeding for consistent test state
-
-### 11. Documentation
-
-**Current State**: Basic README with test documentation.
-
-**What Can Be Done**:
-- Add JSDoc comments to all page objects and methods
-- Create architecture decision records (ADRs)
-- Document common patterns and anti-patterns
-- Add troubleshooting guide
-- Create onboarding guide for new team members
-- Document CI/CD pipeline and deployment process
-- Add API documentation for helper methods
-
-### 12. Advanced Testing Strategies
-
-**Current State**: Basic functional E2E tests.
-
-**What Can Be Done**:
-- Add performance testing (Lighthouse CI)
-- Implement visual regression testing
-- Add security testing basics (OWASP checks)
-- Create load/stress test scenarios
-- Add contract testing for APIs
-- Implement mutation testing
-- Add chaos engineering tests
-
-### Priority Recommendations
-
-For immediate implementation in a real project, prioritize:
-
-1. **High Priority**: Environment configuration, test data management, authentication optimization
-2. **Medium Priority**: Enhanced reporting, CI/CD improvements, code quality tools
-3. **Low Priority**: Advanced testing strategies, comprehensive documentation
-
-### Conclusion
-
-These improvements represent industry best practices for scalable, maintainable test automation. The current implementation provides a solid foundation with proper POM architecture, TypeScript typing, and basic CI/CD integration. The suggested enhancements would make the framework production-ready for enterprise-level applications.
+1. **Environment Configuration**: Externalize credentials and URLs using `.env` files
+2. **Test Data Management**: Centralized factory with cleanup hooks and faker.js integration
+3. **Enhanced Reporting**: Allure integration, metrics tracking, Slack notifications
+4. **API Optimization**: Use API for test setup to improve performance
+5. **Code Quality**: ESLint, Husky pre-commit hooks, TypeScript strict mode
+6. **CI/CD Enhancements**: Test sharding, parallel execution, scheduled runs
+7. **Advanced Testing**: Visual regression, performance, accessibility testing
+8. **Documentation**: JSDoc comments, ADRs, troubleshooting guides

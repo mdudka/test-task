@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+    playwright-tests:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: playwright-tests
+        volumes:
+            - ./test-results:/app/test-results
+            - ./playwright-report:/app/playwright-report
+        environment:
+            - CI=true
+        command: npx playwright test
+        networks:
+            - test-network
+
+networks:
+    test-network:
+        driver: bridge
